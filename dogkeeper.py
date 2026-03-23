@@ -56,7 +56,6 @@ class Kennel:
     def rich_day_summary(self, before):
         from rich.table import Table
         from rich import box
-    # Use a cleaner box style and collapse padding for a sleek look
         table = Table(
             title="[bold]Kennel Summary[/bold]", 
             box=box.ROUNDED,
@@ -70,7 +69,6 @@ class Kennel:
         table.add_column("After", justify="right", style="green")
         table.add_column("Change", justify="right")
 
-        # Helper to calculate and format the difference
         def get_row_data(label, old_val, new_val):
             diff = new_val - old_val
             diff_str = f"[bold red]{diff}[/]" if diff < 0 else f"[bold green]+{diff}[/]"
@@ -353,22 +351,18 @@ class Dog:
         table.add_column("After", justify="right", style="green")
         table.add_column("Change", justify="right")
 
-        # 1. Happiness Row
         h_diff = self.happiness - before['happiness']
         h_change = f"[bold green]+{h_diff}[/]" if h_diff > 0 else (f"[bold red]{h_diff}[/]" if h_diff < 0 else "[dim]0[/]")
         table.add_row("Happiness", f"{before['happiness']}/10", f"{self.happiness}/10", h_change)
 
-        # 2. Weight Row (Tracking the -1kg loss)
         w_diff = self.weight - before['weight']
         w_change = f"[bold red]{w_diff}kg[/]" if w_diff < 0 else (f"[bold green]+{w_diff}kg[/]" if w_diff > 0 else "[dim]0[/]")
         table.add_row("Weight", f"{before['weight']}kg", f"{self.weight}kg", w_change)
 
-        # 3. Size Row (Tracking if they shrunk)
         size_changed = before['size'] != self.size
         s_change = "[bold red]↓ SHRUNK[/]" if size_changed else "[dim]--[/]"
         table.add_row("Size", before['size'], self.size, s_change)
 
-        # 4. Hunger Status Row
         was_fed = "[green]no[/]" if before['is_fed'] else "[red]yes[/]"
         is_hungry = "[red]yes[/]" if not self.is_fed else "[green]no[/]"
         status_change = "[bold blue]→[/]" if before['is_fed'] != self.is_fed else "[dim]--[/]"
