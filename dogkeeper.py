@@ -1,8 +1,6 @@
 import json
 from datetime import date
-import sys
 import os
-import time
 import random
 from rich.console import Console
 from rich.table import Table
@@ -10,14 +8,48 @@ from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.console import Group
 from rich import box
+
 console = Console()
 
-DOG_NAMES = ["Buddy", "Max", "Bella", "Charlie", "Luna", "Cooper", "Daisy", "Rocky", "Molly", "Bear", "Sadie", "Tucker", "Lola", "Duke", "Zoe", "Thor", "Nala", "Rex", "Cleo", "Bruno", "Rosie", "Atlas", "Nova", "Diesel", "Maple", "Ghost", "Shadow", "Storm", "Biscuit", "Pepper"]
+DOG_NAMES = [
+    "Buddy",
+    "Max",
+    "Bella",
+    "Charlie",
+    "Luna",
+    "Cooper",
+    "Daisy",
+    "Rocky",
+    "Molly",
+    "Bear",
+    "Sadie",
+    "Tucker",
+    "Lola",
+    "Duke",
+    "Zoe",
+    "Thor",
+    "Nala",
+    "Rex",
+    "Cleo",
+    "Bruno",
+    "Rosie",
+    "Atlas",
+    "Nova",
+    "Diesel",
+    "Maple",
+    "Ghost",
+    "Shadow",
+    "Storm",
+    "Biscuit",
+    "Pepper",
+]
+
 
 def plural_check(word, amount):
     if amount != 1:
         word += "s"
     return word
+
 
 class Kennel:
     def __init__(self):
@@ -35,7 +67,7 @@ class Kennel:
     def __str__(self):
         days = (date.today() - self.created_at).days
         return f"Kennel statistics:\n\tDate created:\t{self.created_at} ({(date.today() - self.created_at).days} {plural_check('day', days)} ago)\n\tCoins: {self.coins}\n\tDogs:\t\t{self.amount}/{self.max_amount}\n\tFood:\t\t{self.food_reserves}/{self.max_food_reserves}"
-    
+
     def __rich__(self):
         days = (date.today() - self.created_at).days
         table = Table(
@@ -43,25 +75,28 @@ class Kennel:
             box=box.ROUNDED,
             header_style="bold magenta",
             title_style="bold blue",
-            row_styles=["none", "dim"]
+            row_styles=["none", "dim"],
         )
         table.add_column("Attribute", style="cyan", no_wrap=True)
         table.add_column("Value", justify="right", style="yellow")
-        table.add_row("Created", f"{self.created_at} ({days} {plural_check('day', days)} ago)")
+        table.add_row(
+            "Created", f"{self.created_at} ({days} {plural_check('day', days)} ago)"
+        )
         table.add_row("Coins", str(self.coins))
         table.add_row("Dogs", f"{self.amount}/{self.max_amount}")
         table.add_row("Food", f"{self.food_reserves}/{self.max_food_reserves}")
         return table
-    
+
     def rich_day_summary(self, before):
         from rich.table import Table
         from rich import box
+
         table = Table(
-            title="[bold]Kennel Summary[/bold]", 
+            title="[bold]Kennel Summary[/bold]",
             box=box.ROUNDED,
             header_style="bold magenta",
             title_style="bold blue",
-            row_styles=["none", "dim"]
+            row_styles=["none", "dim"],
         )
 
         table.add_column("Attribute", style="cyan", no_wrap=True)
@@ -72,29 +107,36 @@ class Kennel:
         def get_row_data(label, old_val, new_val):
             diff = new_val - old_val
             diff_str = f"[bold red]{diff}[/]" if diff < 0 else f"[bold green]+{diff}[/]"
-            if diff == 0: diff_str = "[dim]0[/]"
+            if diff == 0:
+                diff_str = "[dim]0[/]"
             return [label, str(old_val), str(new_val), diff_str]
 
-        table.add_row(*get_row_data("Coins", before['coins'], self.coins))
-        table.add_row(*get_row_data("Food", before['food_reserves'], self.food_reserves))
+        table.add_row(*get_row_data("Coins", before["coins"], self.coins))
+        table.add_row(
+            *get_row_data("Food", before["food_reserves"], self.food_reserves)
+        )
 
         return table
 
-    
     def save(self):
         dict_list = [dog.__dict__ for dog in self.dogs_list]
         with open("kennel.json", "w") as f:
-            json.dump({ "dogs": dict_list,  
-                        "amount": self.amount,
-                        "max_amount": self.max_amount,
-                        "max_amount_level": self.max_amount_level,
-                        "food_reserves": self.food_reserves,
-                        "max_food_reserves": self.max_food_reserves,
-                        "max_food_reserves_level": self.max_food_reserves_level,
-                        "created_at": str(self.created_at),
-                        "last_processed_day": str(self.last_processed_day),
-                        "coins": self.coins
-                    }, f, indent=4)
+            json.dump(
+                {
+                    "dogs": dict_list,
+                    "amount": self.amount,
+                    "max_amount": self.max_amount,
+                    "max_amount_level": self.max_amount_level,
+                    "food_reserves": self.food_reserves,
+                    "max_food_reserves": self.max_food_reserves,
+                    "max_food_reserves_level": self.max_food_reserves_level,
+                    "created_at": str(self.created_at),
+                    "last_processed_day": str(self.last_processed_day),
+                    "coins": self.coins,
+                },
+                f,
+                indent=4,
+            )
 
     def load(self):
         try:
@@ -114,18 +156,24 @@ class Kennel:
             missed_days = (date.today() - self.last_processed_day).days
             snapshots = {
                 dog.name: {
-                    "happiness": dog.happiness, 
+                    "happiness": dog.happiness,
                     "is_fed": dog.is_fed,
                     "weight": dog.weight,
-                    "size": dog.size
-                } for dog in self.dogs_list
+                    "size": dog.size,
+                }
+                for dog in self.dogs_list
             }
-            snapshots["kennel"] = {"coins": self.coins, "food_reserves": self.food_reserves}
+            snapshots["kennel"] = {
+                "coins": self.coins,
+                "food_reserves": self.food_reserves,
+            }
             if missed_days > 0:
                 for _ in range(missed_days):
                     self.new_day()
                 self.last_processed_day = date.today()
-                print(f"You were gone for {missed_days} {plural_check('day', missed_days)}.")
+                print(
+                    f"You were gone for {missed_days} {plural_check('day', missed_days)}."
+                )
                 console.print(self.rich_day_summary(snapshots["kennel"]))
                 print()
                 for dog in self.dogs_list:
@@ -135,7 +183,13 @@ class Kennel:
             print("No save found.")
 
     def new_day(self):
-        size_multiplier = {"tiny": 0.5, "small": 0.7, "medium": 1, "large": 1.3, "huge": 2}
+        size_multiplier = {
+            "tiny": 0.5,
+            "small": 0.7,
+            "medium": 1,
+            "large": 1.3,
+            "huge": 2,
+        }
         for dog in self.dogs_list:
             if dog.is_fed:
                 dog.happiness = min(dog.happiness + 2, 10)
@@ -157,7 +211,7 @@ class Kennel:
             else:
                 happiness_multiplier = 1
             self.coins += 10 * size_multiplier.get(dog.size) * happiness_multiplier
-        
+
     def buy_dog(self, name=None):
         if name is None:
             name = random.choice(DOG_NAMES)
@@ -169,11 +223,11 @@ class Kennel:
                 self.coins -= cost
                 return result
         else:
-            print(f"Not enough coins.")
+            print("Not enough coins.")
 
-    def add_dog(self, dog: 'Dog'):
+    def add_dog(self, dog: "Dog"):
         if self.amount == self.max_amount:
-            print(f"The kennel is full.")
+            print("The kennel is full.")
             return None
         elif not any(d.name == dog.name for d in self.dogs_list):
             self.dogs_list.append(dog)
@@ -183,18 +237,22 @@ class Kennel:
             print(f"{dog.name} is already in the kennel.")
             return None
 
-    def remove_dog(self, dog: 'Dog'):
+    def remove_dog(self, dog: "Dog"):
         if dog in self.dogs_list:
             self.dogs_list.remove(dog)
             self.amount -= 1
-            print(f"{dog.name} removed from the kennel. ({self.amount}/{self.max_amount} dogs in the kennel.)")
+            print(
+                f"{dog.name} removed from the kennel. ({self.amount}/{self.max_amount} dogs in the kennel.)"
+            )
         else:
             print(f"{dog.name} is already not in the kennel.")
 
     def sort(self, method, reverse):
         try:
             order = "ascending" if not reverse else "descending"
-            sorted_list = sorted(self.dogs_list, key=lambda x: getattr(x, method), reverse=reverse)
+            sorted_list = sorted(
+                self.dogs_list, key=lambda x: getattr(x, method), reverse=reverse
+            )
             print(f"Dogs in kennel sorted by {method} ({order}): ")
             if method == "name":
                 for dog in sorted_list:
@@ -209,11 +267,11 @@ class Kennel:
     def feed(self):
 
         table = Table(
-            title="[bold]Feeding Report[/bold]", 
+            title="[bold]Feeding Report[/bold]",
             box=box.ROUNDED,
             header_style="bold magenta",
             title_style="bold yellow",
-            row_styles=["none", "dim"]
+            row_styles=["none", "dim"],
         )
 
         table.add_column("Dog", style="cyan", no_wrap=True)
@@ -227,48 +285,57 @@ class Kennel:
             old_weight = dog.weight
             old_size = dog.size
             old_food_req = dog.food_req
-            
+
             if self.food_reserves >= dog.food_req:
                 self.food_reserves -= dog.food_req
                 dog.is_fed = True
                 dog.weight += 1
                 dog.determine_size()
-                
+
                 weight_str = f"{old_weight} [blue]→[/] {dog.weight}"
-                size_str = f"{old_size} [bold pink]→ {dog.size}[/]" if old_size != dog.size else f"[dim]{dog.size}[/]"
+                size_str = (
+                    f"{old_size} [bold pink]→ {dog.size}[/]"
+                    if old_size != dog.size
+                    else f"[dim]{dog.size}[/]"
+                )
                 status_str = "[bold green]FED[/]"
-                
-                table.add_row(dog.name, str(old_food_req), weight_str, size_str, status_str)
+
+                table.add_row(
+                    dog.name, str(old_food_req), weight_str, size_str, status_str
+                )
             else:
                 table.add_row(
-                    dog.name, 
-                    f"[red]{old_food_req}[/]", 
-                    f"[dim]{dog.weight}[/]", 
-                    f"[dim]{dog.size}[/]", 
-                    "[bold red]HUNGRY[/]"
+                    dog.name,
+                    f"[red]{old_food_req}[/]",
+                    f"[dim]{dog.weight}[/]",
+                    f"[dim]{dog.size}[/]",
+                    "[bold red]HUNGRY[/]",
                 )
                 fed_all = False
         if not fed_all:
             return Group(table, "[bold red]⚠ Warning: Some dogs are hungry![/]")
         return table
-    
-    
-    def play(self, first: 'Dog', second: 'Dog'):
+
+    def play(self, first: "Dog", second: "Dog"):
         if first.can_play and second.can_play:
             first_reference_happiness = first.happiness
             second_reference_happiness = second.happiness
             first.happiness = first.happiness + 1 if first.happiness + 1 <= 10 else 10
-            second.happiness = second.happiness + 1 if second.happiness + 1 <= 10 else 10
+            second.happiness = (
+                second.happiness + 1 if second.happiness + 1 <= 10 else 10
+            )
             first.can_play = False
             second.can_play = False
-            print(f"{first.name} and {second.name} played together and had a lot of fun!\n{first.name} {first_reference_happiness}/10 -> {first.happiness}/10 happiness\n{second.name} {second_reference_happiness}/10 -> {second.happiness}/10 happiness\n")
+            print(
+                f"{first.name} and {second.name} played together and had a lot of fun!\n{first.name} {first_reference_happiness}/10 -> {first.happiness}/10 happiness\n{second.name} {second_reference_happiness}/10 -> {second.happiness}/10 happiness\n"
+            )
         elif not first.can_play and second.can_play:
             print(f"{first.name} has already played today.")
         elif first.can_play and not second.can_play:
             print(f"{second.name} has already played today.")
         else:
             print(f"Both {first.name} and {second.name} have already played today")
-        
+
     def upgrades(self, upgrade):
         if upgrade == "max_amount":
             cost = self.max_amount_level * 200
@@ -276,16 +343,25 @@ class Kennel:
                 self.max_amount_level += 1
                 self.max_amount += 1
                 self.coins -= cost
-                print(f"Upgraded the maximum amount of dogs your kennel can have. {self.max_amount_level - 1} -> {self.max_amount_level} level. {self.max_amount - 1} -> {self.max_amount} dog capacity")
+                print(
+                    f"Upgraded the maximum amount of dogs your kennel can have. {self.max_amount_level - 1} -> {self.max_amount_level} level. {self.max_amount - 1} -> {self.max_amount} dog capacity"
+                )
             else:
-                print(f"Not enough coins.")
-
-
-                
+                print("Not enough coins.")
 
 
 class Dog:
-    def __init__(self, name, age=None, weight=None, happiness=None, is_fed=False, can_play=True, size="", food_req=0):
+    def __init__(
+        self,
+        name,
+        age=None,
+        weight=None,
+        happiness=None,
+        is_fed=False,
+        can_play=True,
+        size="",
+        food_req=0,
+    ):
         self.name = name
         self.age = age if age is not None else random.randint(1, 16)
         self.weight = weight if weight is not None else random.randint(2, 50)
@@ -311,7 +387,7 @@ class Dog:
             self.food_req = 5
         else:
             self.size = "huge"
-            self.food_req = 10         
+            self.food_req = 10
 
     def __str__(self):
         hungry = "yes" if not self.is_fed else "no"
@@ -324,7 +400,7 @@ class Dog:
             box=box.ROUNDED,
             header_style="bold magenta",
             title_style="bold green",
-            row_styles=["none", "dim"]
+            row_styles=["none", "dim"],
         )
         table.add_column("Attribute", style="cyan", no_wrap=True)
         table.add_column("Value", justify="right", style="yellow")
@@ -336,14 +412,14 @@ class Dog:
         table.add_row("Happiness", f"{self.happiness}/10")
         return table
 
-    def rich_day_summary(self, before):  
+    def rich_day_summary(self, before):
         table = Table(
-            title=f"[bold]{self.name}[/bold]", 
+            title=f"[bold]{self.name}[/bold]",
             box=box.ROUNDED,
             header_style="bold magenta",
             title_style="bold green",
             title_justify="center",
-            row_styles=["none", "dim"]
+            row_styles=["none", "dim"],
         )
 
         table.add_column("Attribute", style="cyan", no_wrap=True)
@@ -351,21 +427,33 @@ class Dog:
         table.add_column("After", justify="right", style="green")
         table.add_column("Change", justify="right")
 
-        h_diff = self.happiness - before['happiness']
-        h_change = f"[bold green]+{h_diff}[/]" if h_diff > 0 else (f"[bold red]{h_diff}[/]" if h_diff < 0 else "[dim]0[/]")
-        table.add_row("Happiness", f"{before['happiness']}/10", f"{self.happiness}/10", h_change)
+        h_diff = self.happiness - before["happiness"]
+        h_change = (
+            f"[bold green]+{h_diff}[/]"
+            if h_diff > 0
+            else (f"[bold red]{h_diff}[/]" if h_diff < 0 else "[dim]0[/]")
+        )
+        table.add_row(
+            "Happiness", f"{before['happiness']}/10", f"{self.happiness}/10", h_change
+        )
 
-        w_diff = self.weight - before['weight']
-        w_change = f"[bold red]{w_diff}kg[/]" if w_diff < 0 else (f"[bold green]+{w_diff}kg[/]" if w_diff > 0 else "[dim]0[/]")
+        w_diff = self.weight - before["weight"]
+        w_change = (
+            f"[bold red]{w_diff}kg[/]"
+            if w_diff < 0
+            else (f"[bold green]+{w_diff}kg[/]" if w_diff > 0 else "[dim]0[/]")
+        )
         table.add_row("Weight", f"{before['weight']}kg", f"{self.weight}kg", w_change)
 
-        size_changed = before['size'] != self.size
+        size_changed = before["size"] != self.size
         s_change = "[bold red]↓ SHRUNK[/]" if size_changed else "[dim]--[/]"
-        table.add_row("Size", before['size'], self.size, s_change)
+        table.add_row("Size", before["size"], self.size, s_change)
 
-        was_fed = "[green]no[/]" if before['is_fed'] else "[red]yes[/]"
+        was_fed = "[green]no[/]" if before["is_fed"] else "[red]yes[/]"
         is_hungry = "[red]yes[/]" if not self.is_fed else "[green]no[/]"
-        status_change = "[bold blue]→[/]" if before['is_fed'] != self.is_fed else "[dim]--[/]"
+        status_change = (
+            "[bold blue]→[/]" if before["is_fed"] != self.is_fed else "[dim]--[/]"
+        )
         table.add_row("Hungry?", was_fed, is_hungry, status_change)
 
         return table
@@ -376,17 +464,20 @@ kennel1 = Kennel()
 
 console = Console()
 
+
 def main():
     rprint = console.print
     last_output = None
 
     while True:
-        os.system('clear')
-        rprint(Panel.fit(
-        "[bold yellow]DOGKEEPER[/]\n[dim]Manage your kennel, feed your dogs.[/]",
-        border_style="blue", 
-        box=box.DOUBLE
-        ))
+        os.system("clear")
+        rprint(
+            Panel.fit(
+                "[bold yellow]DOGKEEPER[/]\n[dim]Manage your kennel, feed your dogs.[/]",
+                border_style="blue",
+                box=box.DOUBLE,
+            )
+        )
 
         status = f"[bold yellow]🪙 {kennel1.coins}[/]  [bold blue]🍖 {kennel1.food_reserves}/{kennel1.max_food_reserves}[/]  [bold white]🐕 {kennel1.amount}/{kennel1.max_amount}[/]"
         rprint(Panel(status, style="dim white", expand=False))
@@ -398,12 +489,11 @@ def main():
         full_command = raw_input.split(" ")
         cmd = full_command[0].lower()
 
-
         if cmd == "buy":
             name = Prompt.ask("Name?", default="")
             result = kennel1.buy_dog(name if name else None)
             last_output = result if result else "[red]Not enough coins.[/]"
-        
+
         elif cmd == "feed":
             last_output = kennel1.feed()
 
@@ -412,11 +502,18 @@ def main():
 
         elif cmd == "dog":
             if len(full_command) > 1:
-                dog = next((d for d in kennel1.dogs_list if d.name.lower() == full_command[1].lower()), None)
+                dog = next(
+                    (
+                        d
+                        for d in kennel1.dogs_list
+                        if d.name.lower() == full_command[1].lower()
+                    ),
+                    None,
+                )
                 if dog:
                     last_output = dog
                 else:
-                   last_output = f"[red]No dog named '{full_command[1]}' found.[/]"
+                    last_output = f"[red]No dog named '{full_command[1]}' found.[/]"
             else:
                 names = [f"[cyan]{dog.name}[/]" for dog in kennel1.dogs_list]
                 last_output = ", ".join(names)
@@ -433,5 +530,6 @@ def main():
 
         else:
             last_output = "[dim]Commands: buy, feed, kennel, dog <name>, play, save, load, clear[/]"
+
 
 main()
