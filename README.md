@@ -11,5 +11,6 @@ pip install -r requirements.txt
 
 ## Usage
 ```bash
-python3 dogkeeper.py
+./run.sh                # Linux/Mac
+python3 dogkeeper.py    # Windows
 ```
