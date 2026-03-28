@@ -8,6 +8,7 @@ from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.console import Group
 from rich import box
+from shop import display_shop
 
 console = Console()
 
@@ -348,6 +349,15 @@ class Kennel:
                 )
             else:
                 print("Not enough coins.")
+        elif upgrade == "max_food_reserves":
+            cost = self.max_food_reserves_level * 150
+            if self.coins >= cost:
+                self.max_food_reserves_level += 1
+                self.max_food_reserves += 5
+                self.coins -= cost
+                print(f"Upgraded food storage. {self.max_food_reserves - 5} -> {self.max_food_reserves}")
+            else:
+                print("Not enough coins.")
 
 
 class Dog:
@@ -494,6 +504,9 @@ def main():
             result = kennel1.buy_dog(name if name else None)
             last_output = result if result else "[red]Not enough coins.[/]"
 
+        elif cmd == "shop":
+            last_output = display_shop(kennel1)
+
         elif cmd == "feed":
             last_output = kennel1.feed()
 
@@ -529,7 +542,7 @@ def main():
             break
 
         else:
-            last_output = "[dim]Commands: buy, feed, kennel, dog <name>, play, save, load, clear[/]"
+            last_output = "[dim]Commands: buy, shop. feed, kennel, dog <name>, play, save, load, clear[/]"
 
 
 main()
