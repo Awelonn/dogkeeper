@@ -313,7 +313,7 @@ class Kennel:
                 )
                 fed_all = False
         if not fed_all:
-            return Group(table, "[bold red]⚠ Warning: Some dogs are hungry![/]")
+            return Group(table, "[bold red]Warning: Some dogs are hungry![/]")
         return table
 
     def play(self, first: "Dog", second: "Dog"):
@@ -479,7 +479,7 @@ def main():
             )
         )
 
-        status = f"[bold yellow]🪙 {kennel1.coins}[/]  [bold blue]🍖 {kennel1.food_reserves}/{kennel1.max_food_reserves}[/]  [bold white]🐕 {kennel1.amount}/{kennel1.max_amount}[/]"
+        status = f"[bold yellow]Coins: {kennel1.coins}[/]  [bold blue]Food: {kennel1.food_reserves}/{kennel1.max_food_reserves}[/]  [bold white]Dogs: {kennel1.amount}/{kennel1.max_amount}[/]"
         rprint(Panel(status, style="dim white", expand=False))
 
         if last_output:
@@ -520,7 +520,7 @@ def main():
 
         elif cmd in ["save", "load"]:
             getattr(kennel1, cmd)()
-            last_output = f"[bold green]✔ {cmd.capitalize()} successful![/]"
+            last_output = f"[bold green]OK {cmd.capitalize()} successful![/]"
 
         elif cmd == "clear":
             last_output = None
