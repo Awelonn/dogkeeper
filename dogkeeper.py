@@ -8,7 +8,8 @@ from rich.prompt import Prompt
 from rich.panel import Panel
 from rich.console import Group
 from rich import box
-from shop import display_shop
+from shop import display_shop, shop_loop
+from ui import print_header
 
 console = Console()
 
@@ -54,6 +55,7 @@ def plural_check(word, amount):
 
 class Kennel:
     def __init__(self):
+        self.name = "My Kennel"
         self.amount = 0
         self.max_amount = 3
         self.max_amount_level = 1
@@ -63,7 +65,7 @@ class Kennel:
         self.max_food_reserves_level = 1
         self.created_at = date.today()
         self.last_processed_day = date.today()
-        self.coins = 100
+        self.coins = 1000
 
     def __str__(self):
         days = (date.today() - self.created_at).days
@@ -344,20 +346,18 @@ class Kennel:
                 self.max_amount_level += 1
                 self.max_amount += 1
                 self.coins -= cost
-                print(
-                    f"Upgraded the maximum amount of dogs your kennel can have. {self.max_amount_level - 1} -> {self.max_amount_level} level. {self.max_amount - 1} -> {self.max_amount} dog capacity"
-                )
+                return True
             else:
-                print("Not enough coins.")
+                return False
         elif upgrade == "max_food_reserves":
             cost = self.max_food_reserves_level * 150
             if self.coins >= cost:
                 self.max_food_reserves_level += 1
                 self.max_food_reserves += 5
                 self.coins -= cost
-                print(f"Upgraded food storage. {self.max_food_reserves - 5} -> {self.max_food_reserves}")
+                return True
             else:
-                print("Not enough coins.")
+                return False
 
 
 class Dog:
@@ -481,13 +481,7 @@ def main():
 
     while True:
         os.system("clear")
-        rprint(
-            Panel.fit(
-                "[bold yellow]DOGKEEPER[/]\n[dim]Manage your kennel, feed your dogs.[/]",
-                border_style="blue",
-                box=box.DOUBLE,
-            )
-        )
+        print_header(kennel1)
 
         status = f"[bold yellow]Coins: {kennel1.coins}[/]  [bold blue]Food: {kennel1.food_reserves}/{kennel1.max_food_reserves}[/]  [bold white]Dogs: {kennel1.amount}/{kennel1.max_amount}[/]"
         rprint(Panel(status, style="dim white", expand=False))
@@ -505,7 +499,8 @@ def main():
             last_output = result if result else "[red]Not enough coins.[/]"
 
         elif cmd == "shop":
-            last_output = display_shop(kennel1)
+            shop_loop(kennel1)
+            last_output = None
 
         elif cmd == "feed":
             last_output = kennel1.feed()
